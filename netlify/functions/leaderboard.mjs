@@ -24,7 +24,8 @@ async function allEntries(store) {
 const json = (data, status = 200) => Response.json(data, { status, headers: { "cache-control": "no-store" } });
 
 export default async (req) => {
-  const store = getStore("leaderboard");
+  // "strong": skor yang baru dikirim langsung terbaca (default Netlify Blobs baru terlihat setelah beberapa detik)
+  const store = getStore({ name: "leaderboard", consistency: "strong" });
 
   if (req.method === "GET") {
     const entries = await allEntries(store);
@@ -45,12 +46,13 @@ export default async (req) => {
     if (!body.dryRun) await store.setJSON(id, { name, score, at });
 
     let entries = await allEntries(store);
-    if (body.dryRun) entries = [...entries, parseId(id)].sort((a, b) => a.id.localeCompare(b.id));
+    // pastikan skor yang barusan dikirim ikut dihitung walau daftar belum ter-update
+    if (!entries.some(e => e.id === id)) entries = [...entries, parseId(id)].sort((a, b) => a.id.localeCompare(b.id));
+    const rank = entries.findIndex(e => e.id === id) + 1;   // dihitung sebelum skor terendah dibuang
     if (!body.dryRun && entries.length > MAX_ENTRIES) {
       await Promise.all(entries.slice(MAX_ENTRIES).map(e => store.delete(e.id)));
       entries = entries.slice(0, MAX_ENTRIES);
     }
-    const rank = entries.findIndex(e => e.id === id) + 1;
     return json({ id, rank, top: entries.slice(0, TOP_N) });
   }
 

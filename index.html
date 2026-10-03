@@ -33,13 +33,13 @@
   @keyframes bump { 40% { transform: scale(1.2); background: #f2b63288; } }
   .float { position: absolute; right: 4px; top: 0; color: #ffe066; font-weight: 700; pointer-events: none; animation: floatUp 1.2s ease-out forwards; }
   @keyframes floatUp { to { transform: translateY(-34px); opacity: 0; } }
-  #musicBtn, #muteBtn { background: #00000033; border: 0; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; color: var(--cream); }
-  #musicBtn svg, #muteBtn svg { width: 20px; height: 20px; }
+  #lbBtn, #musicBtn, #muteBtn { background: #00000033; border: 0; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; color: var(--cream); }
+  #lbBtn svg, #musicBtn svg, #muteBtn svg { width: 20px; height: 20px; }
   @media (max-width: 600px) {
     #hud { gap: 6px; padding: 8px 10px; }
     .logo span { display: none; }
     .pill { font-size: 11px; padding: 3px 7px; } .pill b { font-size: 13px; }
-    #musicBtn, #muteBtn { width: 32px; height: 32px; flex-shrink: 0; }
+    #lbBtn, #musicBtn, #muteBtn { width: 32px; height: 32px; flex-shrink: 0; }
   }
 
   main {
@@ -374,6 +374,7 @@
   <span class="pill">Pelanggan <b id="cust">-</b></span>
   <span class="pill combo" id="comboPill" hidden>Combo <b id="combo">0</b></span>
   <span class="pill" id="scorePill">Skor <b id="score">0</b></span>
+  <button id="lbBtn" onclick="showLeaderboard()" aria-label="Papan skor"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v2h3v3a4 4 0 01-4 4h-.3A5 5 0 0113 14.9V18h3v3H8v-3h3v-3.1A5 5 0 018.3 12H8a4 4 0 01-4-4V5h3V3zm0 4H6v1a2 2 0 001 1.7V7zm10 0v2.7A2 2 0 0018 8V7h-1z"/></svg></button>
   <button id="musicBtn" onclick="toggleMusic()" aria-label="Lagu"></button>
   <button id="muteBtn" onclick="toggleMute()" aria-label="Efek suara"></button>
 </header>
@@ -809,7 +810,7 @@ let S = null;
 function newGame() {
   Sound.play('click');
   Sound.startMusic();
-  S = { lvl: 0, score: 0, shownScore: 0, log: [], phase: 'idle', combo: 0 };
+  S = { lvl: 0, score: 0, shownScore: 0, log: [], phase: 'idle', combo: 0, ended: false };
   $('#score').textContent = 0;
   startLevel();
 }
@@ -975,7 +976,7 @@ function renderTimer() {
 }
 
 setInterval(() => {
-  if (!S || S.phase !== 'serve') return;
+  if (!S || S.phase !== 'serve' || S.paused) return;
   const c = S.c, before = c.timeLeft;
   c.timeLeft -= 0.1;
   const sec = Math.ceil(c.timeLeft);
@@ -1225,6 +1226,7 @@ const STAR = on => `<svg class="star ${on ? 'on' : ''}" viewBox="0 0 24 24"><pat
 
 function endGame() {
   S.phase = 'idle';
+  S.ended = true;
   $('#closedSign').textContent = 'Toko tutup. Terima kasih!';
   $('#view').innerHTML = '';
   $('#hint').textContent = '';
@@ -1296,23 +1298,37 @@ async function submitScore() {
   msg.textContent = 'Mengirim…';
   try {
     const d = await lbFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name, score: S.score }) });
-    $('#lbForm').hidden = true;
-    msg.textContent = d.rank <= 10 ? `Kamu peringkat ${d.rank}!` : `Kamu peringkat ${d.rank}. Masuk 10 besar supaya tampil di sini.`;
+    S.submitted = true;
     Sound.play(d.rank <= 3 ? 'record' : 'collect');
-    $('#lbList').innerHTML = lbListHTML(d.top, d.id);
+    showLeaderboard({
+      top: d.top, myId: d.id,
+      msg: d.rank <= 10 ? `Kamu peringkat ${d.rank}!` : `Kamu peringkat ${d.rank}. Masuk 10 besar supaya tampil di sini.`,
+    });
   } catch (e) {
     msg.textContent = lbErr(e);
     btn.disabled = false;
   }
 }
 
-function showLeaderboard() {
+// Halaman papan skor. Bisa dibuka dari layar awal, dari tombol piala di atas (game dijeda),
+// atau otomatis setelah kirim skor.
+function showLeaderboard({ top = null, myId = null, msg = '' } = {}) {
   Sound.play('click');
+  const inGame = S && !S.ended && S.phase !== 'idle';
+  if (inGame) S.paused = true;
+  const buttons = inGame
+    ? `<button class="btn go" onclick="Sound.play('click'); S.paused = false; hideOverlay()">Kembali ke Toko</button>`
+    : S && S.ended
+      ? `<button class="btn ghost" onclick="Sound.play('click'); showTitle()">Menu</button><button class="btn go" onclick="$('#closedSign').textContent = 'Menunggu pelanggan…'; newGame()">Main Lagi</button>`
+      : `<button class="btn ghost" onclick="Sound.play('click'); showTitle()">Kembali</button>`;
   showOverlay(`
     <h2>Papan Skor</h2>
+    ${msg ? `<p class="lbMsg">${esc(msg)}</p>` : ''}
+    ${inGame ? '<p class="lbMsg">Game dijeda.</p>' : ''}
     <div class="lb"><div id="lbList"></div></div>
-    <div class="btns"><button class="btn ghost" onclick="Sound.play('click'); showTitle()">Kembali</button></div>`);
-  loadLeaderboard($('#lbList'));
+    <div class="btns">${buttons}</div>`);
+  if (top) $('#lbList').innerHTML = lbListHTML(top, myId);
+  else loadLeaderboard($('#lbList'));
 }
 
 function getBest() { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (e) { return 0; } }
