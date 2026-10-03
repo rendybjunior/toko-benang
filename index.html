@@ -291,7 +291,7 @@
   .pegboard .shelf { background: transparent; box-shadow: none; border-bottom: 0; padding: 4px 3px 0; gap: 4px; }
   .pegboard .item { color: var(--ink); font-weight: 600; background: #fff8eee6; box-shadow: 0 2px 0 #0002; }
   .pegboard .item:hover { background: #fff; }
-  .mm { display: inline-block; background: var(--c); color: #fff; font-weight: 700; border-radius: 999px; padding: 0 .5em; line-height: 1.35; }
+  .mm { display: inline-block; background: var(--c); color: #fff; font-weight: 500; border-radius: 999px; padding: 0 .5em; line-height: 1.35; }
   .pegboard .item .nm.mm { font-size: calc(var(--fs) + 3px); padding: 1px .6em; margin-top: 2px; }
 
   /* VIP, combo, rekor */
@@ -627,7 +627,7 @@ function hookSVG(it, cls = '') {
       <rect x="${x0 + 1.2}" y="22" width="${w * .3}" height="66" rx="2" fill="#fff" opacity=".7"/>
       ${nodes}
       <rect x="${Math.min(x0 - 6, 38)}" y="42" width="${Math.max(w + 12, 24)}" height="30" rx="12" fill="${sc}"/>
-      <text x="50" y="63" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
+      <text x="50" y="63" text-anchor="middle" font-size="17" font-weight="500" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
     </g></svg>`;
 }
 // Nama dengan "badge" ukuran berwarna untuk hakpen (dipakai di balon chat, zoom, kasir)
