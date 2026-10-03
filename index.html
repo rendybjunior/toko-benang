@@ -325,6 +325,9 @@
   .badge { font-weight: 700; padding: 4px 12px; border-radius: 999px; color: #fff; animation: pop .4s .5s both; }
   .badge.combo { background: #ff5d73; }
   .badge.vip { background: #d4a017; }
+  .badge.fewest { background: #2f8f4e; }
+  .tipNotes { font-size: 14px; color: #8a6d50; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+  .tipNotes .money { transform: scale(.75); margin: -6px -10px; }
   .newRecord { display: inline-block; background: #ff5d73; color: #fff; font-weight: 700; padding: 4px 14px; border-radius: 999px; transform: rotate(-4deg); animation: pop .5s 1s both; }
   .best { font-size: 14px; color: #8a6d50; }
 
@@ -402,7 +405,8 @@ const HOOK_COLORS = { 2: '#e05252', 3: '#f0a030', 4: '#4caf50', 5: '#3d85c6', 6:
 const VIP = { chance: .2, timeFactor: .75, mult: 2 };   // pelanggan VIP: waktu lebih singkat, poin x2
 const COMBO = { step: .5, max: 3 };                      // tiap sukses beruntun: x1.5, x2, ... maks x3
 const BEST_KEY = 'tokoBenang.best';
-const SCORE = { onTimeBase: 100, perSecondLeft: 2, late: 50, wrongChange: 0 };
+const SCORE = { onTimeBase: 100, perSecondLeft: 2, late: 50, wrongChange: 0,
+                fewestNotesBonus: 30 }; // bonus kalau kembalian pakai jumlah uang (koin/lembar) paling sedikit
 // Uang: koin untuk 500 & 1.000, sisanya lembaran (warna mirip rupiah asli)
 const MONEY = {
   500: { kind: 'coin', c: '#d9b65a' }, 1000: { kind: 'coin', c: '#c9ccd1' },
@@ -1121,6 +1125,20 @@ function addNote(v) { S.tray.push(v); S.justAdded = S.tray.length - 1; Sound.pla
 function removeNote(i) { S.tray.splice(i, 1); Sound.play('remove'); renderPay(); }
 function clearTray() { S.tray = []; Sound.play('remove'); renderPay(); }
 
+// Susunan kembalian dengan jumlah koin/lembar paling sedikit (DP, aman untuk pecahan apa pun)
+function fewestNotes(amount) {
+  const best = [[]];
+  for (let a = 500; a <= amount; a += 500) {
+    let opt = null;
+    for (const v of CHANGE_NOTES) {
+      const prev = best[(a - v) / 500];
+      if (v <= a && prev && (!opt || prev.length + 1 < opt.length)) opt = [...prev, v];
+    }
+    best[a / 500] = opt;
+  }
+  return (best[amount / 500] || []).sort((x, y) => y - x);
+}
+
 function submitChange() {
   if (S.phase !== 'serve') return;
   const c = S.c;
@@ -1133,9 +1151,12 @@ function submitChange() {
   S.combo = status === 'ok' ? S.combo + 1 : 0;
   const comboMult = status === 'ok' ? Math.min(COMBO.max, 1 + COMBO.step * (S.combo - 1)) : 1;
   const vipMult = c.vip && correct ? VIP.mult : 1;
-  const base = !correct ? SCORE.wrongChange
+  const ideal = fewestNotes(due);
+  const fewest = correct && S.tray.length === ideal.length;
+  const base = (!correct ? SCORE.wrongChange
              : late ? SCORE.late
-             : SCORE.onTimeBase + Math.ceil(c.timeLeft) * SCORE.perSecondLeft;
+             : SCORE.onTimeBase + Math.ceil(c.timeLeft) * SCORE.perSecondLeft)
+             + (fewest ? SCORE.fewestNotesBonus : 0);
   const pts = Math.round(base * comboMult * vipMult);
   S.score += pts;
   S.log.push({ lvl: S.lvl + 1, items: c.order.map(itemName).join(', '), status, pts, vip: c.vip });
@@ -1145,8 +1166,10 @@ function submitChange() {
   else { Sound.play('fail'); setMood('angry', 1e9); restartAnim($('#custWrap'), 'shake'); say('Lho, kembaliannya kok gini?'); }
   if (pts > 0) floatScore(pts);
   if (comboMult > 1) setTimeout(() => Sound.play('combo', S.combo), 450);
+  if (fewest) setTimeout(() => Sound.play('coin'), 250);
   updateHud();
-  const badges = [comboMult > 1 ? `<span class="badge combo">COMBO ${S.combo} · x${comboMult}</span>` : '',
+  const badges = [fewest ? `<span class="badge fewest">UANG PAS +${SCORE.fewestNotesBonus}</span>` : '',
+                  comboMult > 1 ? `<span class="badge combo">COMBO ${S.combo} · x${comboMult}</span>` : '',
                   vipMult > 1 ? `<span class="badge vip">VIP x${vipMult}</span>` : ''].join('');
 
   const title = { ok: 'BERHASIL!', late: 'TELAT', bad: 'SALAH HITUNG' }[status];
@@ -1156,6 +1179,7 @@ function submitChange() {
     <div class="result ${status}">
       <div class="stamp">${title}</div>
       <p>Kembalian seharusnya <b>${rp(due)}</b>, kamu kasih <b>${rp(given)}</b>.</p>
+      ${correct && !fewest ? `<p class="tipNotes">Bonus <b>+${SCORE.fewestNotesBonus}</b> kalau pakai uang paling sedikit: ${ideal.map(v => moneyHTML(v, 'span')).join('')}</p>` : ''}
       ${badges ? `<div class="badges">${badges}</div>` : ''}
       <div class="pts">+${pts}</div>
       <button class="btn go" onclick="Sound.play('click'); customerLeave(nextCustomer)">Lanjut</button>
@@ -1212,7 +1236,7 @@ showOverlay(`
   <h2>Toko Benang Rajut</h2>
   <p>Pelanggan datang minta <b>1–3 barang</b>: benang dan hakpen. Cari di rak, lalu klik barangnya.</p>
   <p>Setelah lengkap, hitung <b>kembaliannya</b> dengan klik uang. Cepat &amp; tepat = skor maksimal!</p>
-  <p>Isi rak diacak setiap level, jadi ingat-ingat posisinya. Sukses beruntun = <b>COMBO</b>, pelanggan bermahkota = <b>VIP poin x2</b>!</p>
+  <p>Isi rak diacak setiap level, jadi ingat-ingat posisinya. Sukses beruntun = <b>COMBO</b>, pelanggan bermahkota = <b>VIP poin x2</b>, kembalian dengan uang paling sedikit = <b>bonus</b>!</p>
   <div class="legend">${TYPES.map(t => `<div>${yarnSVG({ type: t.name, hex: '#b9a48a' })}${t.name}</div>`).join('')}
     <div>${hookSVG({ material: 'Aluminium', size: 4 })}Hakpen</div></div>
   ${getBest() ? `<div class="best">Rekor kamu: ${getBest()} poin</div>` : ''}
