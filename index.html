@@ -331,6 +331,31 @@
   .newRecord { display: inline-block; background: #ff5d73; color: #fff; font-weight: 700; padding: 4px 14px; border-radius: 999px; transform: rotate(-4deg); animation: pop .5s 1s both; }
   .best { font-size: 14px; color: #8a6d50; }
 
+  /* papan skor */
+  .lb { text-align: left; margin: 12px 0 4px; }
+  .lb h3 { margin: 10px 0 6px; font-size: 16px; text-align: center; }
+  .lb ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .lb li {
+    display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px;
+    padding: 5px 10px; border-radius: 10px; background: #f3e6d2; font-variant-numeric: tabular-nums;
+  }
+  .lb li.me { background: #e4f4e8; box-shadow: inset 0 0 0 2px var(--green); animation: pop .4s; }
+  .lb .rk { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: #e6d3b8; }
+  .lb li:nth-child(1) .rk { background: #f2c94c; }
+  .lb li:nth-child(2) .rk { background: #d5d8dd; }
+  .lb li:nth-child(3) .rk { background: #e0a878; }
+  .lb .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb .sc { font-weight: 600; }
+  .lbForm { display: flex; gap: 8px; }
+  .lbForm input {
+    flex: 1; min-width: 0; font: inherit; padding: 10px 12px; border-radius: 12px;
+    border: 2px solid #e0cdb0; background: #fff; color: var(--ink);
+  }
+  .lbForm input:focus { outline: none; border-color: var(--green); }
+  .lbMsg { font-size: 13px; color: #8a6d50; text-align: center; min-height: 1.2em; margin: 6px 0 0; }
+  .logWrap { text-align: left; margin-top: 8px; }
+  .logWrap summary { cursor: pointer; font-size: 14px; color: #8a6d50; text-align: center; }
+
   .stars { display: flex; justify-content: center; gap: 8px; margin: 8px 0; }
   .star { width: 52px; height: 52px; fill: #e0d2bd; }
   .star.on { fill: #f2b632; animation: pop .5s cubic-bezier(.3,1.8,.5,1) both; }
@@ -1216,10 +1241,78 @@ function endGame() {
     <div class="stars">${[0, 1, 2].map(i => STAR(i < stars).replace('class="star on"', `class="star on" style="animation-delay:${.2 + i * .25}s"`)).join('')}</div>
     <div class="final">${S.score} poin</div>
     ${isRecord ? '<div class="newRecord">REKOR BARU!</div>' : `<div class="best">Rekor kamu: ${best} poin</div>`}
-    <p>${ok} dari ${S.log.length} pelanggan puas.</p>
-    <div class="log">${S.log.map(l =>
-      `<div><span>Lv${l.lvl} · ${l.vip ? '<b>VIP</b> · ' : ''}${l.items}</span><span class="tag ${l.status}">${tagText[l.status]} +${l.pts}</span></div>`).join('')}</div>
+    <div class="lb">
+      <form class="lbForm" id="lbForm" onsubmit="event.preventDefault(); submitScore()">
+        <input id="lbName" maxlength="16" placeholder="Nama kamu" autocomplete="nickname" value="${esc(getName())}" aria-label="Nama untuk papan skor">
+        <button class="btn go" id="lbSend">Kirim Skor</button>
+      </form>
+      <p class="lbMsg" id="lbMsg"></p>
+      <h3>Papan Skor</h3>
+      <div id="lbList"></div>
+    </div>
+    <details class="logWrap"><summary>Rincian pelanggan (${ok} dari ${S.log.length} puas)</summary>
+      <div class="log">${S.log.map(l =>
+        `<div><span>Lv${l.lvl} · ${l.vip ? '<b>VIP</b> · ' : ''}${l.items}</span><span class="tag ${l.status}">${tagText[l.status]} +${l.pts}</span></div>`).join('')}</div>
+    </details>
     <div class="btns"><button class="btn go" onclick="$('#closedSign').textContent = 'Menunggu pelanggan…'; newGame()">Main Lagi</button></div>`);
+  loadLeaderboard($('#lbList'));
+}
+
+// ================== PAPAN SKOR (Netlify Function di /api/leaderboard) ==================
+const LB_URL = '/api/leaderboard';
+const NAME_KEY = 'tokoBenang.name';
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function getName() { try { return localStorage.getItem(NAME_KEY) || ''; } catch (e) { return ''; } }
+function setName(v) { try { localStorage.setItem(NAME_KEY, v); } catch (e) { /* abaikan */ } }
+
+function lbListHTML(top, myId) {
+  if (!top.length) return '<p class="lbMsg">Belum ada skor. Jadilah yang pertama!</p>';
+  return `<ol>${top.map((e, i) =>
+    `<li class="${e.id === myId ? 'me' : ''}"><span class="rk">${i + 1}</span><span class="nm">${esc(e.name)}</span><span class="sc">${e.score.toLocaleString('id-ID')}</span></li>`).join('')}</ol>`;
+}
+async function lbFetch(opts) {
+  const res = await fetch(LB_URL, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Papan skor sedang bermasalah. Coba lagi sebentar.');
+  return data;
+}
+// fetch gagal total (offline, atau game dibuka di luar benang.alyaaulia.id)
+const lbErr = e => e instanceof TypeError || e instanceof SyntaxError
+  ? 'Papan skor tidak bisa dihubungi. Cek internet, atau main di benang.alyaaulia.id.'
+  : e.message;
+
+async function loadLeaderboard(el) {
+  el.innerHTML = '<p class="lbMsg">Memuat papan skor…</p>';
+  try { el.innerHTML = lbListHTML((await lbFetch()).top); }
+  catch (e) { el.innerHTML = `<p class="lbMsg">${esc(lbErr(e))}</p>`; }
+}
+
+async function submitScore() {
+  const input = $('#lbName'), btn = $('#lbSend'), msg = $('#lbMsg');
+  const name = input.value.trim();
+  if (!name) { msg.textContent = 'Isi nama dulu ya.'; input.focus(); return; }
+  setName(name);
+  btn.disabled = true;
+  msg.textContent = 'Mengirim…';
+  try {
+    const d = await lbFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name, score: S.score }) });
+    $('#lbForm').hidden = true;
+    msg.textContent = d.rank <= 10 ? `Kamu peringkat ${d.rank}!` : `Kamu peringkat ${d.rank}. Masuk 10 besar supaya tampil di sini.`;
+    Sound.play(d.rank <= 3 ? 'record' : 'collect');
+    $('#lbList').innerHTML = lbListHTML(d.top, d.id);
+  } catch (e) {
+    msg.textContent = lbErr(e);
+    btn.disabled = false;
+  }
+}
+
+function showLeaderboard() {
+  Sound.play('click');
+  showOverlay(`
+    <h2>Papan Skor</h2>
+    <div class="lb"><div id="lbList"></div></div>
+    <div class="btns"><button class="btn ghost" onclick="Sound.play('click'); showTitle()">Kembali</button></div>`);
+  loadLeaderboard($('#lbList'));
 }
 
 function getBest() { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (e) { return 0; } }
@@ -1231,6 +1324,7 @@ Sound.toggleMusic(loadPref('music'));
 $('#muteBtn').innerHTML = Sound.muted ? SPEAKER_OFF : SPEAKER_ON;
 $('#musicBtn').innerHTML = Sound.musicOn ? MUSIC_ON : MUSIC_OFF;
 $('#logo').innerHTML = yarnSVG({ type: 'Wol', hex: '#f07fb0' }) + '<span>Toko Benang</span>';
+function showTitle() {
 showOverlay(`
   ${yarnSVG({ type: 'Wol', hex: '#f07fb0' }, 'bigLogo')}
   <h2>Toko Benang Rajut</h2>
@@ -1240,7 +1334,9 @@ showOverlay(`
   <div class="legend">${TYPES.map(t => `<div>${yarnSVG({ type: t.name, hex: '#b9a48a' })}${t.name}</div>`).join('')}
     <div>${hookSVG({ material: 'Aluminium', size: 4 })}Hakpen</div></div>
   ${getBest() ? `<div class="best">Rekor kamu: ${getBest()} poin</div>` : ''}
-  <div class="btns"><button class="btn go" onclick="newGame()">Mulai</button></div>`);
+  <div class="btns"><button class="btn ghost" onclick="showLeaderboard()">Papan Skor</button><button class="btn go" onclick="newGame()">Mulai</button></div>`);
+}
+showTitle();
 </script>
 </body>
 </html>
