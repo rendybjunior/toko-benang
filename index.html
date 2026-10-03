@@ -51,17 +51,17 @@
   #counter {
     position: relative; overflow: hidden; border-radius: 18px; min-height: 0;
     display: flex; flex-direction: column;
-    background: linear-gradient(#fdf7ec, #f1dfc2); box-shadow: 0 4px 0 #0000001a, 0 6px 16px #0000001a;
+    background: linear-gradient(#e3f4ef, #f7efe6); box-shadow: 0 4px 0 #0000001a, 0 6px 16px #0000001a;
   }
   #bubble {
     position: relative; z-index: 3; margin: 14px 14px 0; padding: 12px 14px; border-radius: 16px;
-    background: #fff; border: 3px solid #3b2a1a; font-size: 15px; transform-origin: 50% 100%;
+    background: #fff; box-shadow: 0 4px 0 #e6d3bd, 0 6px 14px #7a5c4422; font-size: 15px; transform-origin: 50% 100%;
     visibility: hidden; opacity: 0;
   }
   #bubble.show { visibility: visible; opacity: 1; animation: bubbleIn .4s cubic-bezier(.3,1.6,.5,1); }
   #bubble::after {
     content: ""; position: absolute; bottom: -14px; left: 50%; margin-left: -10px;
-    border: 11px solid transparent; border-bottom: 0; border-top-color: #3b2a1a;
+    border: 11px solid transparent; border-bottom: 0; border-top-color: #fff;
   }
   @keyframes bubbleIn { from { transform: scale(.3); opacity: 0; } }
   .order { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
@@ -77,7 +77,7 @@
 
   #custWrap { position: relative; z-index: 1; flex: 1; min-height: 110px; max-height: 230px; margin-top: auto; display: flex; justify-content: center; align-items: flex-end; }
   #customer { height: 100%; display: flex; align-items: flex-end; }
-  #customer svg { width: auto; height: 100%; max-height: 226px; display: block; transform-origin: 50% 100%; animation: bob 2.4s ease-in-out infinite; }
+  #customer svg { width: auto; height: 100%; max-height: 226px; display: block; filter: drop-shadow(0 6px 6px #7a5c4426); transform-origin: 50% 100%; animation: bob 2.4s ease-in-out infinite; }
   @keyframes bob { 50% { transform: translateY(3px) scaleY(.985); } }
   #custWrap.enter { animation: enter .65s cubic-bezier(.3,1.2,.5,1) both; }
   #custWrap.leave { animation: leave .5s ease-in both; }
@@ -87,16 +87,16 @@
   @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
   #closedSign {
     position: absolute; left: 50%; top: 90px; transform: translateX(-50%) rotate(-3deg); z-index: 1;
-    background: var(--wood); color: var(--cream); padding: 10px 18px; border-radius: 10px; font-weight: 600;
-    box-shadow: inset 0 0 0 3px var(--wood-light); white-space: nowrap;
+    background: #fff6ec; color: var(--ink); padding: 10px 18px; border-radius: 12px; font-weight: 600;
+    box-shadow: 0 4px 0 #f0d9c2; white-space: nowrap;
   }
   #closedSign::before { content: ""; position: absolute; left: 50%; top: -30px; width: 2px; height: 30px; background: var(--wood-dark); }
 
   .counterTop {
     position: relative; z-index: 2; margin-top: -34px; padding: 14px 16px 16px;
-    background: linear-gradient(var(--wood), #6d4524); border-top: 10px solid var(--wood-light); color: var(--cream);
+    background: linear-gradient(#f3c9a8, #e9b58f); border-top: 10px solid #f9dcc4; color: var(--ink);
   }
-  #timerBar { height: 16px; background: #00000040; border-radius: 8px; overflow: hidden; }
+  #timerBar { height: 16px; background: #ffffff8c; border-radius: 8px; overflow: hidden; }
   #timerFill { height: 100%; width: 100%; background: #5cc46a; border-radius: 8px; transition: width .1s linear, background .3s; }
   #timerFill.low { animation: pulse .5s infinite alternate; }
   @keyframes pulse { to { filter: brightness(1.4); } }
@@ -116,8 +116,8 @@
   #view.racks { display: grid; gap: 8px; align-items: start; overflow: hidden; --ys: 44px; --fs: 11px; }
   .shelfRack {
     min-width: 0; border-radius: 10px; padding: 6px;
-    background: linear-gradient(90deg, #8a5a32, #a0703f 20%, #a0703f 80%, #8a5a32);
-    display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 4px #6d4524, 0 3px 0 #3f2812;
+    background: #ecd3b0;
+    display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 4px #e0c299, 0 4px 0 #cfaa7e;
   }
   .shelfRack h3 {
     margin: 0 auto; padding: 1px 10px; border-radius: 6px; text-align: center; font-size: 13px; line-height: 18px;
@@ -125,24 +125,24 @@
     max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .shelf {
-    background: linear-gradient(#3f2812, #5c3c1d); border-radius: 5px; padding: 4px 3px 0;
-    border-bottom: 6px solid var(--wood-light); display: flex; justify-content: space-around; gap: 2px;
-    box-shadow: inset 0 5px 6px #0005;
+    background: #fff6ec; border-radius: 8px; padding: 4px 3px 0;
+    border-bottom: 6px solid #e2c39c; display: flex; justify-content: space-around; gap: 2px;
+    box-shadow: inset 0 4px 6px #c9a47a33;
   }
   .item {
-    border: 0; background: transparent; color: var(--cream); padding: 2px; border-radius: 8px;
+    border: 0; background: transparent; color: #7a5c44; font-weight: 500; padding: 2px; border-radius: 8px;
     display: flex; flex-direction: column; align-items: center; gap: 1px;
     font-size: var(--fs); line-height: 1.2; flex: 1 1 0; min-width: 0; transition: background .15s;
   }
   .item .nm { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item:hover { background: #ffffff1a; }
+  .item:hover { background: #fff; }
   .item:hover .yarn { animation: wiggle .45s; }
   .item .yarn { width: var(--ys); height: var(--ys); }
   @keyframes wiggle { 25% { transform: rotate(-10deg) scale(1.08); } 75% { transform: rotate(8deg) scale(1.08); } }
   .fresh .item { animation: itemIn .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: var(--d); }
   @keyframes itemIn { from { transform: scale(0) translateY(20px); opacity: 0; } }
 
-  .yarn { display: block; width: 72px; height: 72px; flex-shrink: 0; overflow: visible; filter: drop-shadow(0 2px 2px #0005); }
+  .yarn { display: block; width: 72px; height: 72px; flex-shrink: 0; overflow: visible; filter: drop-shadow(0 3px 3px #7a5c4430); }
   @keyframes pop { from { transform: scale(.2); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
 
   /* ---------- kasir ---------- */
@@ -164,13 +164,13 @@
   .bought .yarn { width: 28px; height: 28px; }
   .label { font-size: 13px; color: #8a6d50; font-weight: 500; }
   .tray {
-    min-height: 78px; background: #e9dcc6; border-radius: 12px; padding: 10px;
+    min-height: 78px; background: #fff6ec; border-radius: 12px; padding: 10px;
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center; box-shadow: inset 0 3px 8px #0002;
   }
   .tray:empty::before { content: "Belum ada uang kembalian"; color: #9c8566; font-size: 13px; }
   .cashDrawer {
-    background: linear-gradient(#5c3c1d, #4a2f16); border-radius: 12px; padding: 12px;
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; box-shadow: inset 0 0 0 4px #3f2812;
+    background: #ecd3b0; border-radius: 12px; padding: 12px;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; box-shadow: inset 0 0 0 4px #e0c299;
   }
   .payActions { display: flex; gap: 10px; justify-content: flex-end; }
 
@@ -258,7 +258,7 @@
     #bubble { grid-area: bubble; align-self: center; margin: 8px 10px 8px 4px; padding: 8px 10px; font-size: 13px; }
     #bubble::after {
       bottom: auto; top: 50%; left: -14px; margin: -10px 0 0;
-      border: 11px solid transparent; border-left: 0; border-right-color: #3b2a1a;
+      border: 11px solid transparent; border-left: 0; border-right-color: #fff;
     }
     .order { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
     .order li .yarn { width: 24px; height: 24px; }
@@ -276,7 +276,7 @@
     background: #eadcc6; color: var(--ink); font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .tab.hookTab { background: #dcbc8c; }
-  .tab.on { background: #8a5a32; color: var(--cream); }
+  .tab.on { background: #ecd3b0; color: var(--ink); }
   .tabbed .shelfRack { border-top-left-radius: 0; border-top-right-radius: 0; }
   .tabbed .shelfRack h3 { display: none; }
   .tabbed .item { font-size: 13px; }
@@ -285,8 +285,8 @@
 
   /* papan hakpen */
   .shelfRack.pegboard {
-    background: radial-gradient(circle, #6d4524 2px, transparent 2.6px) 0 0 / 16px 16px, #dcbc8c;
-    box-shadow: inset 0 0 0 6px #a0703f, 0 4px 0 #3f2812;
+    background: radial-gradient(circle, #c9a47a 2px, transparent 2.6px) 0 0 / 16px 16px, #f1dcbb;
+    box-shadow: inset 0 0 0 4px #e0c299, 0 4px 0 #cfaa7e;
   }
   .pegboard .shelf { background: transparent; box-shadow: none; border-bottom: 0; padding: 4px 3px 0; gap: 4px; }
   .pegboard .item { color: var(--ink); font-weight: 600; background: #fff8eee6; box-shadow: 0 2px 0 #0002; }
@@ -317,26 +317,6 @@
 </style>
 </head>
 <body>
-<!-- definisi bersama untuk gambar benang (gradien bayangan & efek bulu wol) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <radialGradient id="yarnShade" cx="35%" cy="30%" r="75%">
-      <stop offset="0" stop-color="#fff" stop-opacity=".45"/>
-      <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".35"/>
-    </radialGradient>
-    <linearGradient id="cakeShade" x1="0" x2="1">
-      <stop offset="0" stop-color="#000" stop-opacity=".25"/>
-      <stop offset=".3" stop-color="#fff" stop-opacity=".25"/>
-      <stop offset=".6" stop-color="#fff" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".3"/>
-    </linearGradient>
-    <filter id="fuzz" x="-20%" y="-20%" width="140%" height="140%">
-      <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="7"/>
-    </filter>
-  </defs>
-</svg>
 
 <header id="hud">
   <div class="logo" id="logo"></div>
@@ -548,81 +528,106 @@ function loadPref(k) { try { return localStorage.getItem('tokoBenang.' + k) !== 
 function toggleMute() { const m = Sound.toggle(); savePref('sfx', !m); $('#muteBtn').innerHTML = m ? SPEAKER_OFF : SPEAKER_ON; Sound.play('click'); }
 function toggleMusic() { const on = Sound.toggleMusic(); savePref('music', on); $('#musicBtn').innerHTML = on ? MUSIC_ON : MUSIC_OFF; Sound.play('click'); }
 
-// ================== GAMBAR BENANG ==================
-//   Katun       = bola rapat, serat halus, doff
-//   Wol         = bola berbulu (pinggiran fuzzy), lilitan tebal
-//   Akrilik     = gulungan lonjong (skein) dipelintir, mengkilap
-//   Milk Cotton = gulungan silinder ("cake") dengan label kertas
+// ================== GAMBAR BENANG (gaya lembut, tanpa garis tepi) ==================
+//   Katun       = bola rapi dengan lilitan halus
+//   Wol         = bola berbulu (pinggiran bergelombang), lilitan tebal
+//   Akrilik     = gulungan lonjong (skein) dengan label kertas di tengah
+//   Milk Cotton = gulungan tabung ("cake") dengan label kertas
 let yarnUid = 0;
+// f < 0 = lebih gelap, f > 0 = lebih terang
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const t = f < 0 ? 0 : 255, q = Math.abs(f);
+  r = Math.round((t - r) * q + r); g = Math.round((t - g) * q + g); b = Math.round((t - b) * q + b);
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+const pastel = c => shade(c, .18);
+const isLight = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * .3 + ((n >> 8) & 255) * .59 + (n & 255) * .11) > 200; };
+// Lingkaran bergelombang (pinggiran wol)
+function bumpy(cx, cy, r, n, amp) {
+  let d = '';
+  for (let i = 0; i <= n; i++) {
+    const a = i / n * 2 * Math.PI, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    if (i === 0) { d += `M${x.toFixed(1)} ${y.toFixed(1)}`; continue; }
+    const am = (i - .5) / n * 2 * Math.PI;
+    d += ` Q${(cx + (r + amp) * Math.cos(am)).toFixed(1)} ${(cy + (r + amp) * Math.sin(am)).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+// Lilitan benang: garis lengkung sejajar yang diputar
+function wraps(cx, cy, r, ang, n, col, sw, op) {
+  let s = '';
+  for (let k = 0; k < n; k++) {
+    const t = -r + 2 * r * (k + .5) / n;
+    s += `<path d="M${cx - r - 6} ${cy + t} Q${cx} ${cy + t - r * .5} ${cx + r + 6} ${cy + t}"/>`;
+  }
+  return `<g transform="rotate(${ang} ${cx} ${cy})" stroke="${col}" stroke-width="${sw}" opacity="${op}" fill="none" stroke-linecap="round">${s}</g>`;
+}
+
 function yarnSVG(it, cls = '') {
   const id = 'yc' + (yarnUid++);
-  const C = it.hex;
-  const line = 'stroke="#00000030" fill="none"';
+  const C = it.hex, P = pastel(C);
+  // benang putih/krem: lilitannya pakai warna gelap tipis supaya tetap kelihatan
+  const line = isLight(C) ? '#7a5c44' : '#fff';
+  const lo = isLight(C) ? .22 : .45;
   let g;
-  if (it.type === 'Katun') {
-    g = `<clipPath id="${id}"><circle cx="50" cy="50" r="40"/></clipPath>
-      <circle cx="50" cy="50" r="40" fill="${C}"/>
-      <g clip-path="url(#${id})" ${line} stroke-width="1.2">
-        ${range(-60, 160, 5).map(x => `<line x1="${x}" y1="0" x2="${x + 50}" y2="100"/>`).join('')}
-        <ellipse cx="50" cy="50" rx="44" ry="16" transform="rotate(-35 50 50)" stroke-width="2.5"/>
-      </g>
-      <circle cx="50" cy="50" r="40" fill="url(#yarnShade)"/>`;
-  } else if (it.type === 'Wol') {
-    g = `<clipPath id="${id}"><circle cx="50" cy="50" r="38"/></clipPath>
-      <path d="M78 74 q14 8 8 22" stroke="${C}" stroke-width="5" fill="none" filter="url(#fuzz)"/>
-      <circle cx="50" cy="50" r="41" fill="${C}" filter="url(#fuzz)"/>
-      <g clip-path="url(#${id})" ${line} stroke-width="6" stroke-linecap="round">
-        ${[0, 60, 120].map(a => `<ellipse cx="50" cy="50" rx="44" ry="18" transform="rotate(${a} 50 50)"/>`).join('')}
-      </g>
-      <circle cx="50" cy="50" r="41" fill="url(#yarnShade)" filter="url(#fuzz)"/>`;
+  if (it.type === 'Katun' || it.type === 'Wol') {
+    const wol = it.type === 'Wol';
+    const shape = wol ? `<path d="${bumpy(50, 50, 33, 16, 5)}"/>` : `<circle cx="50" cy="50" r="36"/>`;
+    g = `<ellipse cx="50" cy="92" rx="26" ry="4" fill="#7a5c4422"/>
+      <path d="M72 74 q14 8 10 20" stroke="${P}" stroke-width="${wol ? 6 : 4}" fill="none" stroke-linecap="round"/>
+      <clipPath id="${id}">${shape}</clipPath>
+      <g clip-path="url(#${id})">
+        <rect width="100" height="100" fill="${P}"/>
+        <circle cx="62" cy="64" r="34" fill="${shade(C, -.08)}" opacity=".45"/>
+        ${wraps(50, 50, 38, -28, wol ? 4 : 7, line, wol ? 6 : 2.6, lo)}
+        ${wraps(50, 50, 38, 58, wol ? 3 : 4, line, wol ? 5 : 2.2, lo * .7)}
+        <circle cx="36" cy="34" r="9" fill="#fff" opacity=".5"/>
+      </g>`;
   } else if (it.type === 'Akrilik') {
-    g = `<clipPath id="${id}"><ellipse cx="50" cy="50" rx="46" ry="24"/></clipPath>
-      <ellipse cx="50" cy="50" rx="46" ry="24" fill="${C}"/>
-      <g clip-path="url(#${id})" ${line} stroke-width="2.5">
-        ${range(-30, 130, 7).map(x => `<line x1="${x}" y1="20" x2="${x + 18}" y2="80"/>`).join('')}
-        <path d="M50 26 q-10 24 0 48" stroke="#00000055" stroke-width="3"/>
+    const lobes = `<ellipse cx="29" cy="50" rx="25" ry="21"/><ellipse cx="71" cy="50" rx="25" ry="21"/>`;
+    g = `<ellipse cx="50" cy="88" rx="38" ry="4" fill="#7a5c4422"/>
+      <clipPath id="${id}">${lobes}</clipPath>
+      <g clip-path="url(#${id})">
+        <rect width="100" height="100" fill="${P}"/>
+        <rect y="56" width="100" height="40" fill="${shade(C, -.08)}" opacity=".45"/>
+        <g stroke="${line}" stroke-width="3" opacity="${lo}">${range(-14, 110, 8).map(x => `<path d="M${x} 26 L${x + 16} 76"/>`).join('')}</g>
+        <ellipse cx="20" cy="40" rx="8" ry="4" fill="#fff" opacity=".55" transform="rotate(-25 20 40)"/>
       </g>
-      <ellipse cx="50" cy="50" rx="46" ry="24" fill="url(#yarnShade)"/>
-      <ellipse cx="36" cy="38" rx="18" ry="4" fill="#fff" opacity=".75" transform="rotate(-8 36 38)"/>
-      <ellipse cx="66" cy="40" rx="7" ry="2" fill="#fff" opacity=".6"/>`;
+      <rect x="39" y="27" width="22" height="46" rx="8" fill="#fff"/>
+      <rect x="39" y="45" width="22" height="9" fill="${P}"/>
+      <circle cx="50" cy="36" r="3" fill="${P}"/>`;
   } else { // Milk Cotton
-    g = `<clipPath id="${id}"><rect x="18" y="24" width="64" height="54"/></clipPath>
-      <ellipse cx="50" cy="78" rx="32" ry="9" fill="${C}"/>
-      <ellipse cx="50" cy="78" rx="32" ry="9" fill="#0002"/>
-      <rect x="18" y="24" width="64" height="54" fill="${C}"/>
-      <g clip-path="url(#${id})" ${line} stroke-width="1">
-        ${range(26, 80, 3.5).map(y => `<line x1="18" y1="${y}" x2="82" y2="${y}"/>`).join('')}
-      </g>
-      <rect x="18" y="24" width="64" height="54" fill="url(#cakeShade)"/>
-      <rect x="18" y="44" width="64" height="15" fill="#fffaf0"/>
-      <rect x="18" y="49" width="64" height="2" fill="${C}"/>
-      <rect x="18" y="44" width="64" height="15" fill="url(#cakeShade)"/>
-      <ellipse cx="50" cy="24" rx="32" ry="9" fill="${C}"/>
-      <g ${line} stroke-width="1">${[26, 20, 14, 8].map(r => `<ellipse cx="50" cy="24" rx="${r}" ry="${r * 9 / 32}"/>`).join('')}</g>
-      <ellipse cx="50" cy="24" rx="32" ry="9" fill="#ffffff26"/>
-      <ellipse cx="50" cy="24" rx="4" ry="1.3" fill="#0006"/>`;
+    g = `<ellipse cx="50" cy="90" rx="30" ry="4" fill="#7a5c4422"/>
+      <rect x="22" y="26" width="56" height="58" rx="14" fill="${P}"/>
+      <rect x="58" y="30" width="18" height="50" rx="9" fill="${shade(C, -.08)}" opacity=".4"/>
+      <g stroke="${line}" stroke-width="2" opacity="${lo * .8}">${range(40, 80, 5).map(y => `<path d="M24 ${y} L76 ${y}"/>`).join('')}</g>
+      <rect x="22" y="50" width="56" height="16" fill="#fff"/>
+      <text x="50" y="62" font-size="9" text-anchor="middle" font-weight="600" fill="${isLight(C) ? '#8a6d50' : shade(C, -.1)}" font-family="Fredoka, sans-serif">milk</text>
+      <ellipse cx="50" cy="30" rx="27" ry="8" fill="${shade(C, .35)}"/>
+      <g fill="none" stroke="${line}" stroke-width="1.6" opacity="${lo * 1.2}">${[19, 12].map(r => `<ellipse cx="50" cy="30" rx="${r}" ry="${r * 8 / 27}"/>`).join('')}</g>`;
   }
   return `<svg class="yarn ${cls}" viewBox="0 0 100 100" aria-hidden="true">${g}</svg>`;
 }
 
 // ================== GAMBAR HAKPEN ==================
-// Tiap ukuran punya warna sendiri (HOOK_COLORS) di pegangannya — aluminium juga batangnya.
-// Batang makin tebal kalau ukurannya makin besar; angka ukuran tertulis besar di pegangan.
+// Tiap ukuran punya warna sendiri (HOOK_COLORS) di pegangannya; aluminium batangnya juga berwarna,
+// bambu batangnya kayu beruas. Batang makin tebal kalau ukurannya makin besar.
 function hookSVG(it, cls = '') {
   const metal = it.material === 'Aluminium';
-  const sizeColor = HOOK_COLORS[it.size];
-  const C = metal ? sizeColor : '#d8b27a';
-  const w = 3 + it.size * 1.7;
-  const x0 = 50 - w / 2, x1 = 50 + w / 2;
-  const nodes = metal ? '' : [34, 76].map(y => `<rect x="${x0 - .5}" y="${y}" width="${w + 1}" height="1.8" fill="#8b6a3a"/>`).join('');
+  const sc = HOOK_COLORS[it.size];
+  const rod = metal ? shade(sc, .45) : '#e6c391';
+  const w = 3 + it.size * 1.7, x0 = 50 - w / 2, x1 = 50 + w / 2;
+  const nodes = metal ? '' : [30, 80].map(y => `<rect x="${x0}" y="${y}" width="${w}" height="2" fill="#c49a5e"/>`).join('');
   return `<svg class="yarn ${cls}" viewBox="0 0 100 100" aria-hidden="true">
+    <ellipse cx="54" cy="92" rx="22" ry="3.5" fill="#7a5c4422"/>
     <g transform="rotate(35 50 50)">
-      <path d="M${x0} 24 L${x0} 12 Q${x0} 5 50 5 Q${x1 + 2} 5 ${x1 + 2} 10 L${x1} 13 L50 15.5 L${x1} 18 L${x1} 24 Z" fill="${C}"/>
-      <rect x="${x0}" y="20" width="${w}" height="74" rx="${w / 2}" fill="${C}"/>
-      <rect x="${x0 + 1}" y="20" width="${w * .3}" height="72" rx="${w / 4}" fill="#ffffff66"/>
+      <path d="M${x0} 92 L${x0} 14 Q${x0} 6 50 6 Q${x1 + 3} 6 ${x1 + 3} 11 L${x1} 14 L50 17 L${x1} 20 L${x1} 92 Q50 98 ${x0} 92 Z" fill="${rod}"/>
+      <rect x="${x0 + 1.2}" y="22" width="${w * .3}" height="66" rx="2" fill="#fff" opacity=".7"/>
       ${nodes}
-      <rect x="${Math.min(x0 - 4, 40)}" y="46" width="${Math.max(w + 8, 20)}" height="22" rx="5" fill="${sizeColor}" stroke="#0004" stroke-width="1.5"/>
-      <text x="50" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
+      <rect x="${Math.min(x0 - 6, 38)}" y="42" width="${Math.max(w + 12, 24)}" height="30" rx="12" fill="${sc}"/>
+      <text x="50" y="63" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
     </g></svg>`;
 }
 // Nama dengan "badge" ukuran berwarna untuk hakpen (dipakai di balon chat, zoom, kasir)
@@ -637,59 +642,58 @@ function randomLook() {
   return { skin: pick(SKINS), hair: pick(HAIRS), style: pick(STYLES), shirt: pick(SHIRTS), scarf: pick(SHIRTS), glasses: Math.random() < .25 };
 }
 
+// Gaya lembut: tanpa garis tepi, kepala langsung menempel ke bahu (tanpa leher)
 function customerSVG(p, mood, vip = false) {
-  const ink = '#3a2618';
-  const ln = (d, w = 2.6, col = ink) => `<path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
+  const ink = '#4a3426', sk = p.skin, skD = shade(sk, -.1), hr = p.hair, brow = shade(hr, -.1);
+  const shirt = pastel(p.shirt), scarf = pastel(p.scarf);
   let s = '';
-  // badan
-  s += `<path d="M14 160 Q14 104 60 98 Q106 104 106 160 Z" fill="${p.shirt}"/>`;
-  s += ln('M48 100 Q60 113 72 100', 3, '#00000026');
-  // rambut belakang / kerudung, leher, telinga
+  if (p.style === 'bun') s += `<circle cx="80" cy="19" r="15" fill="${hr}"/>`;
+  s += `<path d="M16 176 Q18 110 80 98 Q142 110 144 176 Z" fill="${shirt}"/>`;
   if (p.style === 'hijab') {
-    s += `<path d="M22 64 Q22 19 60 19 Q98 19 98 64 Q100 100 112 134 Q60 150 8 134 Q20 100 22 64 Z" fill="${p.scarf}"/>`;
-    s += `<path d="M22 64 Q22 19 60 19 Q98 19 98 64 Q100 100 112 134 Q60 150 8 134 Q20 100 22 64 Z" fill="#00000014"/>`;
+    s += `<path d="M38 66 Q38 16 80 16 Q122 16 122 66 Q124 100 136 130 Q80 148 24 130 Q36 100 38 66 Z" fill="${scarf}"/>`;
+    s += `<path d="M38 66 Q38 16 80 16 Q122 16 122 66 Q124 100 136 130 Q80 148 24 130 Q36 100 38 66 Z" fill="#7a5c44" opacity=".07"/>`;
   } else {
-    if (p.style === 'long') s += `<path d="M29 56 Q22 112 42 118 L78 118 Q98 112 91 56 Z" fill="${p.hair}"/>`;
-    s += `<rect x="51" y="82" width="18" height="20" rx="7" fill="${p.skin}"/>`;
-    s += `<circle cx="31" cy="64" r="6" fill="${p.skin}"/><circle cx="89" cy="64" r="6" fill="${p.skin}"/>`;
-    if (p.style === 'bun') s += `<circle cx="60" cy="24" r="12" fill="${p.hair}"/>`;
+    if (p.style === 'long') s += `<path d="M44 58 Q34 118 54 124 L106 124 Q126 118 116 58 Z" fill="${hr}"/>`;
+    s += `<ellipse cx="46" cy="66" rx="5" ry="7" fill="${skD}"/><ellipse cx="114" cy="66" rx="5" ry="7" fill="${skD}"/>`;
   }
-  // kepala
-  s += `<ellipse cx="60" cy="61" rx="29" ry="31" fill="${p.skin}"/>`;
-  if (mood === 'angry') s += `<ellipse cx="60" cy="61" rx="29" ry="31" fill="#ff3b3b" opacity=".2"/>`;
-  // rambut depan
+  s += `<ellipse cx="80" cy="62" rx="34" ry="40" fill="${sk}"/>`;
+  if (mood === 'angry') s += `<ellipse cx="80" cy="62" rx="34" ry="40" fill="#ff5d5d" opacity=".1"/>`;
   const front = {
-    short: `<path d="M31 58 Q28 27 60 27 Q92 27 89 58 Q84 42 66 40 Q56 47 36 46 Q33 50 31 58 Z"/>`,
-    long: `<path d="M30 62 Q27 27 60 27 Q93 27 90 62 Q88 44 72 38 Q60 48 33 48 Z"/>`,
-    bun: `<path d="M31 56 Q29 30 60 30 Q91 30 89 56 Q80 41 60 41 Q40 41 31 56 Z"/>`,
-    curly: [[33, 50], [38, 38], [48, 31], [60, 29], [72, 31], [82, 38], [87, 50]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9"/>`).join(''),
-    hijab: `<path d="M30 55 Q31 27 60 26 Q89 27 90 55 Q78 39 60 39 Q42 39 30 55 Z"/>`,
+    short: `<path d="M45 66 Q40 22 80 22 Q120 22 115 66 Q112 44 98 37 Q82 50 56 45 Q49 52 45 66 Z"/>`,
+    long: `<path d="M45 70 Q40 22 80 22 Q120 22 115 70 Q113 46 100 38 Q84 50 54 46 Q48 54 45 70 Z"/>`,
+    bun: `<path d="M46 62 Q42 26 80 26 Q118 26 114 62 Q108 42 80 40 Q52 42 46 62 Z"/>`,
+    curly: [[48, 52], [50, 38], [60, 28], [72, 23], [86, 23], [98, 28], [108, 38], [111, 52]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="11"/>`).join(''),
+    hijab: `<path d="M45 60 Q46 25 80 24 Q114 25 115 60 Q103 40 80 40 Q57 40 45 60 Z"/>`,
   };
-  s += `<g fill="${p.style === 'hijab' ? p.scarf : p.hair}">${front[p.style]}</g>`;
-  // wajah
-  const ey = 63, eL = 49, eR = 71;
-  const dot = x => `<ellipse cx="${x}" cy="${ey}" rx="3.2" ry="3.8" fill="${ink}"/><circle cx="${x + 1}" cy="${ey - 1.4}" r="1.1" fill="#fff"/>`;
-  const arc = x => ln(`M${x - 5} ${ey + 1} Q${x} ${ey - 6} ${x + 5} ${ey + 1}`);
-  const blush = `<ellipse cx="41" cy="73" rx="5" ry="3" fill="#ff6b6b" opacity=".35"/><ellipse cx="79" cy="73" rx="5" ry="3" fill="#ff6b6b" opacity=".35"/>`;
-  let face = '';
+  s += `<g fill="${p.style === 'hijab' ? scarf : hr}">${front[p.style]}</g>`;
+  if (p.style !== 'curly') s += `<path d="M58 32 Q68 26 80 26" stroke="#fff" opacity=".3" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+
+  const eye = x => `<ellipse cx="${x}" cy="67" rx="3.6" ry="4.6" fill="${ink}"/><circle cx="${x + 1.2}" cy="65.6" r="1.2" fill="#fff"/>`;
+  const ln = (d, w = 3, col = ink) => `<path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
+  const blush = o => `<ellipse cx="60" cy="80" rx="7" ry="3.5" fill="#ff8fa3" opacity="${o}"/><ellipse cx="100" cy="80" rx="7" ry="3.5" fill="#ff8fa3" opacity="${o}"/>`;
+  const nose = ln('M80 70 Q77 78 82 78', 2.4, shade(sk, -.3));
+  const smileEyes = ln('M61 68 Q66 63 71 68', 2.8) + ln('M89 68 Q94 63 99 68', 2.8);
+  let f;
   if (mood === 'delighted') {
-    face = arc(eL) + arc(eR) + blush + `<path d="M49 75 Q60 93 71 75 Z" fill="#7a2b2b"/><path d="M54 83 Q60 89 66 83 Q60 86 54 83 Z" fill="#e86f6f"/>`;
+    f = smileEyes + ln('M59 56 Q66 52 73 55', 3, brow) + ln('M87 55 Q94 52 101 56', 3, brow) + nose + blush(.35)
+      + `<path d="M69 84 Q80 99 91 84 Q80 88 69 84 Z" fill="#b8505a"/><path d="M74 90 Q80 95 86 90 Q80 91 74 90 Z" fill="#ef8f8f"/>`;
   } else if (mood === 'happy') {
-    face = dot(eL) + dot(eR) + blush + ln('M51 77 Q60 85 69 77');
+    f = eye(66) + eye(94) + ln('M59 57 Q66 54 73 56', 3, brow) + ln('M87 56 Q94 54 101 57', 3, brow) + nose + blush(.2)
+      + ln('M71 86 Q80 92 89 86', 2.8);
   } else if (mood === 'neutral') {
-    face = dot(eL) + dot(eR) + ln('M44 54 L54 54', 2.2) + ln('M66 54 L76 54', 2.2) + ln('M53 79 L67 79');
+    f = eye(66) + eye(94) + ln('M60 58 L72 58', 3, brow) + ln('M88 58 L100 58', 3, brow) + nose + blush(.1) + ln('M74 87 Q80 88 86 87', 2.6);
   } else if (mood === 'sad') {
-    face = dot(eL) + dot(eR) + ln('M44 56 L54 52', 2.2) + ln('M66 52 L76 56', 2.2) + ln('M52 82 Q60 76 68 82');
+    f = eye(66) + eye(94) + ln('M60 59 L72 55', 3, brow) + ln('M88 55 L100 59', 3, brow) + nose + ln('M73 90 Q80 85 87 90', 2.6);
   } else { // angry
-    face = dot(eL) + dot(eR) + ln('M43 52 L55 57', 3.2) + ln('M65 57 L77 52', 3.2) + ln('M51 83 Q60 75 69 83', 3)
-      + `<g stroke="#e03131" stroke-width="2.6" fill="none" stroke-linecap="round">
-           <path d="M86 30 q4 4 0 8"/><path d="M96 30 q-4 4 0 8"/><path d="M87 29 q4 4 8 0"/><path d="M87 39 q4 -4 8 0"/></g>`;
+    f = eye(66) + eye(94) + ln('M59 56 L73 61', 3.4, brow) + ln('M101 56 L87 61', 3.4, brow) + nose
+      + `<ellipse cx="60" cy="80" rx="8" ry="4" fill="#ff5d5d" opacity=".3"/><ellipse cx="100" cy="80" rx="8" ry="4" fill="#ff5d5d" opacity=".3"/>`
+      + ln('M72 90 Q80 84 88 90', 2.8)
+      + `<g stroke="#ff5d73" stroke-width="3" fill="none" stroke-linecap="round"><path d="M114 30 q4 4 0 8"/><path d="M124 30 q-4 4 0 8"/><path d="M115 29 q4 4 8 0"/><path d="M115 39 q4 -4 8 0"/></g>`;
   }
-  face += ln('M59 67 Q57 72 61 72', 2, '#00000040');
-  if (p.glasses) face += `<g stroke="${ink}" stroke-width="1.8" fill="#ffffff30"><circle cx="49" cy="63" r="7.5"/><circle cx="71" cy="63" r="7.5"/></g>` + ln('M56.5 63 L63.5 63', 1.8);
-  const crown = vip ? `<path d="M40 24 L42 6 L51 16 L60 1 L69 16 L78 6 L80 24 Z" fill="#f2b632" stroke="#b8860b" stroke-width="1.5" stroke-linejoin="round"/>
-    <circle cx="60" cy="18" r="2.6" fill="#e03131"/><circle cx="48" cy="20" r="2" fill="#2f6fd6"/><circle cx="72" cy="20" r="2" fill="#2f6fd6"/>` : '';
-  return `<svg viewBox="0 0 120 160" aria-hidden="true">${s}${face}${crown}</svg>`;
+  if (p.glasses) f += `<g stroke="${ink}" stroke-width="2" fill="#ffffff30"><circle cx="66" cy="67" r="8.5"/><circle cx="94" cy="67" r="8.5"/></g>` + ln('M74.5 66 L85.5 66', 2);
+  const crown = vip ? `<g transform="translate(0 -8)"><path d="M58 22 L60 2 L70 13 L80 -4 L90 13 L100 2 L102 22 Z" fill="#f2c94c"/>
+    <path d="M58 22 L102 22 L102 17 L58 17 Z" fill="#e0a82e"/><circle cx="80" cy="12" r="3" fill="#ff6b81"/><circle cx="68" cy="16" r="2" fill="#5fa8e8"/><circle cx="92" cy="16" r="2" fill="#5fa8e8"/></g>` : '';
+  return `<svg viewBox="0 -14 160 190" aria-hidden="true">${s}${f}${crown}</svg>`;
 }
 
 // ================== UANG ==================
