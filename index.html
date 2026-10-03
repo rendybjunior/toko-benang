@@ -174,6 +174,28 @@
   }
   .payActions { display: flex; gap: 10px; justify-content: flex-end; }
 
+  /* Kasir di HP: ringkas supaya TOTAL/DIBAYAR dan tombol Serahkan muat satu layar tanpa scroll */
+  @media (max-width: 640px) {
+    .register { gap: 8px; }
+    .lcd { padding: 8px 10px; gap: 4px; }
+    .lcd span { font-size: 10px; }
+    .lcd b { font-size: 15px; }
+    .paidRow { padding: 6px 10px; }
+    .paidRow .bought { display: none; }
+    .paidRow::before { content: "Uang dari pelanggan:"; font-size: 13px; color: #8a6d50; }
+    .label { display: none; }
+    .tray { min-height: 54px; padding: 6px; gap: 6px; }
+    .cashDrawer { padding: 8px; gap: 6px; }
+    .money.note { width: 76px; height: 40px; padding: 0 7px; }
+    .money.note i { width: 20px; height: 20px; margin-top: -10px; left: 6px; }
+    .money.note span { font-size: 14px; }
+    .money.note small { font-size: 6px; letter-spacing: 1px; }
+    .money.coin { width: 42px; height: 42px; font-size: 10px; }
+    .payActions .btn { padding: 12px 10px; }
+    .payActions .btn.ghost { flex: 1; }
+    .payActions .btn.go { flex: 2; }
+  }
+
   .money { border: 0; position: relative; color: #1d1d1d; font-weight: 700; flex-shrink: 0; transition: transform .12s; font-family: inherit; }
   .money.note {
     width: 104px; height: 54px; border-radius: 6px; padding: 0 10px; overflow: hidden;
