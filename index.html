@@ -33,9 +33,14 @@
   @keyframes bump { 40% { transform: scale(1.2); background: #f2b63288; } }
   .float { position: absolute; right: 4px; top: 0; color: #ffe066; font-weight: 700; pointer-events: none; animation: floatUp 1.2s ease-out forwards; }
   @keyframes floatUp { to { transform: translateY(-34px); opacity: 0; } }
-  #muteBtn { background: #00000033; border: 0; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; color: var(--cream); }
-  #muteBtn svg { width: 20px; height: 20px; }
-  @media (max-width: 600px) { .logo span { display: none; } .pill { font-size: 12px; padding: 4px 8px; } }
+  #musicBtn, #muteBtn { background: #00000033; border: 0; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; color: var(--cream); }
+  #musicBtn svg, #muteBtn svg { width: 20px; height: 20px; }
+  @media (max-width: 600px) {
+    #hud { gap: 6px; padding: 8px 10px; }
+    .logo span { display: none; }
+    .pill { font-size: 11px; padding: 3px 7px; } .pill b { font-size: 13px; }
+    #musicBtn, #muteBtn { width: 32px; height: 32px; flex-shrink: 0; }
+  }
 
   main {
     flex: 1; min-height: 0; width: 100%; max-width: 1500px; margin: 0 auto;
@@ -263,6 +268,21 @@
     #closedSign { top: 50%; margin-top: -40px; }
   }
 
+  /* tab rak (HP) */
+  #hint:has(.tabs) { margin-bottom: 0; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    flex: 1; min-width: 0; border: 0; padding: 8px 2px; border-radius: 10px 10px 0 0;
+    background: #eadcc6; color: var(--ink); font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tab.hookTab { background: #dcbc8c; }
+  .tab.on { background: #8a5a32; color: var(--cream); }
+  .tabbed .shelfRack { border-top-left-radius: 0; border-top-right-radius: 0; }
+  .tabbed .shelfRack h3 { display: none; }
+  .tabbed .item { font-size: 13px; }
+  .shelfRack.slide { animation: slideIn .25s ease-out; }
+  @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } }
+
   /* papan hakpen */
   .shelfRack.pegboard {
     background: radial-gradient(circle, #6d4524 2px, transparent 2.6px) 0 0 / 16px 16px, #dcbc8c;
@@ -271,6 +291,8 @@
   .pegboard .shelf { background: transparent; box-shadow: none; border-bottom: 0; padding: 4px 3px 0; gap: 4px; }
   .pegboard .item { color: var(--ink); font-weight: 600; background: #fff8eee6; box-shadow: 0 2px 0 #0002; }
   .pegboard .item:hover { background: #fff; }
+  .mm { display: inline-block; background: var(--c); color: #fff; font-weight: 700; border-radius: 999px; padding: 0 .5em; line-height: 1.35; }
+  .pegboard .item .nm.mm { font-size: calc(var(--fs) + 3px); padding: 1px .6em; margin-top: 2px; }
 
   /* VIP, combo, rekor */
   #bubble.vip { border-color: #d4a017; background: #fffbea; box-shadow: 0 0 0 4px #f2b63255; }
@@ -322,7 +344,8 @@
   <span class="pill">Pelanggan <b id="cust">-</b></span>
   <span class="pill combo" id="comboPill" hidden>Combo <b id="combo">0</b></span>
   <span class="pill" id="scorePill">Skor <b id="score">0</b></span>
-  <button id="muteBtn" onclick="toggleMute()" aria-label="Suara"></button>
+  <button id="musicBtn" onclick="toggleMusic()" aria-label="Lagu"></button>
+  <button id="muteBtn" onclick="toggleMute()" aria-label="Efek suara"></button>
 </header>
 <main>
   <aside id="counter">
@@ -458,16 +481,72 @@ const Sound = (() => {
     record:  () => arp([523, 659, 784, 1046, 1318, 1568], .09, { type: 'triangle', vol: .12, dur: .3 }),
     end:     () => arp([392, 523, 659, 784, 659, 784, 1046], .13, { type: 'triangle', vol: .13, dur: .26 }),
   };
+  // ---------- Lagu latar: chiptune riang C – Am – F – G, diputar berulang ----------
+  // Angka = nada MIDI (60 = C tengah), 0 = jeda. Tiap baris = 1 birama (8 ketukan setengah).
+  const MELODY = [
+    [76, 0, 79, 0, 81, 79, 76, 0], [72, 0, 76, 74, 72, 0, 69, 0],
+    [77, 0, 76, 0, 74, 72, 74, 0], [74, 76, 79, 0, 76, 0, 74, 0],
+    [79, 0, 81, 79, 76, 0, 79, 0], [81, 0, 79, 76, 72, 0, 74, 76],
+    [77, 76, 74, 72, 69, 0, 72, 0], [71, 0, 74, 0, 72, 0, 0, 0],
+  ];
+  const BASS = [48, 45, 41, 43];
+  const CHORDS = [[60, 64, 67], [57, 60, 64], [57, 60, 65], [55, 59, 62]];
+  const BASS_PATTERN = [0, null, 7, null, 12, null, 7, null];
+  let musicOn = true, musicGain = null, musicTimer = null, nextT = 0, step = 0, fast = false;
+  const midi = m => 440 * Math.pow(2, (m - 69) / 12);
+  function mnote(m, t, dur, type, vol) {
+    const c = ac(), o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.value = midi(m);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(musicGain);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function schedule() {
+    const c = ac();
+    const eighth = 60 / (fast ? 140 : 112) / 2;   // lebih cepat saat waktu pelanggan hampir habis
+    while (nextT < c.currentTime + 0.25) {
+      const bar = Math.floor(step / 8), i = step % 8;
+      const mel = MELODY[bar % MELODY.length][i];
+      if (mel) mnote(mel, nextT, eighth * 1.6, 'triangle', .05);
+      const b = BASS_PATTERN[i];
+      if (b !== null) mnote(BASS[bar % 4] + b, nextT, eighth * .9, 'sine', .09);
+      if (i % 2 === 1) CHORDS[bar % 4].forEach(m => mnote(m, nextT, eighth * .5, 'sine', .018));
+      nextT += eighth; step++;
+    }
+  }
+  function startMusic() {
+    if (!musicOn || musicTimer) return;
+    try {
+      const c = ac();
+      if (!musicGain) { musicGain = c.createGain(); musicGain.gain.value = .8; musicGain.connect(c.destination); }
+      nextT = c.currentTime + .05;
+      schedule();
+      musicTimer = setInterval(schedule, 100);
+    } catch (e) { /* browser belum izinkan audio */ }
+  }
+  function stopMusic() { clearInterval(musicTimer); musicTimer = null; }
+
   return {
     play(name, arg) { if (muted) return; try { sfx[name](arg); } catch (e) { /* browser belum izinkan audio */ } },
     toggle() { muted = !muted; return muted; },
     get muted() { return muted; },
+    startMusic,
+    toggleMusic(on = !musicOn) { musicOn = on; if (musicOn) startMusic(); else stopMusic(); return musicOn; },
+    get musicOn() { return musicOn; },
+    setFast(v) { fast = v; },
   };
 })();
 
 const SPEAKER_ON = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
 const SPEAKER_OFF = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
-function toggleMute() { const m = Sound.toggle(); $('#muteBtn').innerHTML = m ? SPEAKER_OFF : SPEAKER_ON; Sound.play('click'); }
+const MUSIC_ON = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 17.5V5l11-2v12.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="3"/><circle cx="17.5" cy="15.5" r="3"/></svg>`;
+const MUSIC_OFF = MUSIC_ON.replace('</svg>', '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>');
+function savePref(k, v) { try { localStorage.setItem('tokoBenang.' + k, v ? '1' : '0'); } catch (e) { /* abaikan */ } }
+function loadPref(k) { try { return localStorage.getItem('tokoBenang.' + k) !== '0'; } catch (e) { return true; } }
+function toggleMute() { const m = Sound.toggle(); savePref('sfx', !m); $('#muteBtn').innerHTML = m ? SPEAKER_OFF : SPEAKER_ON; Sound.play('click'); }
+function toggleMusic() { const on = Sound.toggleMusic(); savePref('music', on); $('#musicBtn').innerHTML = on ? MUSIC_ON : MUSIC_OFF; Sound.play('click'); }
 
 // ================== GAMBAR BENANG ==================
 //   Katun       = bola rapat, serat halus, doff
@@ -527,11 +606,13 @@ function yarnSVG(it, cls = '') {
 }
 
 // ================== GAMBAR HAKPEN ==================
-// Batang makin tebal kalau ukurannya makin besar; angka ukuran tertulis di pegangan.
+// Tiap ukuran punya warna sendiri (HOOK_COLORS) di pegangannya — aluminium juga batangnya.
+// Batang makin tebal kalau ukurannya makin besar; angka ukuran tertulis besar di pegangan.
 function hookSVG(it, cls = '') {
   const metal = it.material === 'Aluminium';
-  const C = metal ? HOOK_COLORS[it.size] : '#d8b27a';
-  const w = 5 + it.size * 1.2;
+  const sizeColor = HOOK_COLORS[it.size];
+  const C = metal ? sizeColor : '#d8b27a';
+  const w = 3 + it.size * 1.7;
   const x0 = 50 - w / 2, x1 = 50 + w / 2;
   const nodes = metal ? '' : [34, 76].map(y => `<rect x="${x0 - .5}" y="${y}" width="${w + 1}" height="1.8" fill="#8b6a3a"/>`).join('');
   return `<svg class="yarn ${cls}" viewBox="0 0 100 100" aria-hidden="true">
@@ -540,10 +621,14 @@ function hookSVG(it, cls = '') {
       <rect x="${x0}" y="20" width="${w}" height="74" rx="${w / 2}" fill="${C}"/>
       <rect x="${x0 + 1}" y="20" width="${w * .3}" height="72" rx="${w / 4}" fill="#ffffff66"/>
       ${nodes}
-      <rect x="${x0 - 4}" y="48" width="${w + 8}" height="18" rx="4" fill="${metal ? '#2b2b2b' : '#a07840'}"/>
-      <text x="50" y="61" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
+      <rect x="${Math.min(x0 - 4, 40)}" y="46" width="${Math.max(w + 8, 20)}" height="22" rx="5" fill="${sizeColor}" stroke="#0004" stroke-width="1.5"/>
+      <text x="50" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="Fredoka, sans-serif">${it.size}</text>
     </g></svg>`;
 }
+// Nama dengan "badge" ukuran berwarna untuk hakpen (dipakai di balon chat, zoom, kasir)
+const itemLabel = it => it.kind === 'hook'
+  ? `Hakpen ${it.material} <span class="mm" style="--c:${HOOK_COLORS[it.size]}">${it.size} mm</span>`
+  : itemName(it);
 const itemSVG = (it, cls = '') => it.kind === 'hook' ? hookSVG(it, cls) : yarnSVG(it, cls);
 
 // ================== GAMBAR PELANGGAN ==================
@@ -557,15 +642,15 @@ function customerSVG(p, mood, vip = false) {
   const ln = (d, w = 2.6, col = ink) => `<path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
   let s = '';
   // badan
-  s += `<path d="M14 160 Q14 112 60 107 Q106 112 106 160 Z" fill="${p.shirt}"/>`;
-  s += ln('M47 109 Q60 124 73 109', 3, '#00000026');
+  s += `<path d="M14 160 Q14 104 60 98 Q106 104 106 160 Z" fill="${p.shirt}"/>`;
+  s += ln('M48 100 Q60 113 72 100', 3, '#00000026');
   // rambut belakang / kerudung, leher, telinga
   if (p.style === 'hijab') {
     s += `<path d="M22 64 Q22 19 60 19 Q98 19 98 64 Q100 100 112 134 Q60 150 8 134 Q20 100 22 64 Z" fill="${p.scarf}"/>`;
     s += `<path d="M22 64 Q22 19 60 19 Q98 19 98 64 Q100 100 112 134 Q60 150 8 134 Q20 100 22 64 Z" fill="#00000014"/>`;
   } else {
     if (p.style === 'long') s += `<path d="M29 56 Q22 112 42 118 L78 118 Q98 112 91 56 Z" fill="${p.hair}"/>`;
-    s += `<rect x="51" y="82" width="18" height="28" rx="7" fill="${p.skin}"/>`;
+    s += `<rect x="51" y="82" width="18" height="20" rx="7" fill="${p.skin}"/>`;
     s += `<circle cx="31" cy="64" r="6" fill="${p.skin}"/><circle cx="89" cy="64" r="6" fill="${p.skin}"/>`;
     if (p.style === 'bun') s += `<circle cx="60" cy="24" r="12" fill="${p.hair}"/>`;
   }
@@ -668,6 +753,7 @@ let S = null;
 
 function newGame() {
   Sound.play('click');
+  Sound.startMusic();
   S = { lvl: 0, score: 0, shownScore: 0, log: [], phase: 'idle', combo: 0 };
   $('#score').textContent = 0;
   startLevel();
@@ -706,6 +792,7 @@ function startLevel() {
   S.phase = 'idle';
   S.view = 'racks';
   S.freshLayout = true;
+  S.tab = 0;
   updateHud();
   customerGone();
   render();
@@ -808,7 +895,7 @@ function renderRequest() {
   const c = S.c;
   $('#request').innerHTML = `${c.vip ? '<div class="vipTag">PELANGGAN VIP · poin x2 · waktu lebih singkat</div>' : ''}Kak, saya mau beli:
     <ul class="order">${c.order.map(it =>
-      `<li class="${c.found.has(it) ? 'done' : ''}">${itemSVG(it)}<span>${itemName(it)}</span>${CHECK_SVG}</li>`).join('')}</ul>`;
+      `<li class="${c.found.has(it) ? 'done' : ''}">${itemSVG(it)}<span>${itemLabel(it)}</span>${CHECK_SVG}</li>`).join('')}</ul>`;
 }
 
 function say(text, good = false) {
@@ -848,23 +935,49 @@ setInterval(() => {
   }
   renderTimer();
   drawCustomer();
+  Sound.setFast(c.timeLeft > 0 && c.timeLeft <= 10);
 }, 100);
 
 // ================== RAK ==================
+// Di HP rak ditampilkan satu per satu lewat tab; di layar lebih besar semua rak berjajar.
+const phoneQuery = matchMedia('(max-width: 640px)');
+phoneQuery.addEventListener('change', () => { if (S && S.view === 'racks') render(); });
+
+function rackHTML(rack, r, cls = '') {
+  let n = 0;
+  return `<div class="shelfRack ${rack.kind === 'hook' ? 'pegboard' : ''} ${cls}"><h3>Rak ${ABC[r]}${rack.kind === 'hook' ? ' · Hakpen' : ''}</h3>${rack.shelves.map((items, s) =>
+    `<div class="shelf">${items.map((it, i) =>
+      `<button class="item" style="--d:${(n++) * 0.03}s" title="${itemName(it)}" onclick="zoom(${r}, ${s}, ${i})">${itemSVG(it)}${it.kind === 'hook'
+        ? `<span class="nm mm" style="--c:${HOOK_COLORS[it.size]}">${it.size} mm</span>`
+        : `<span class="nm">${it.color}</span>`}</button>`
+    ).join('')}</div>`
+  ).join('')}</div>`;
+}
+
+function setTab(r) {
+  if (r === S.tab) return;
+  Sound.play('click');
+  S.tab = r;
+  S.slideTab = true;
+  render();
+}
+
 function render() {
   const view = $('#view');
   if (S.view === 'racks') {
-    $('#hint').textContent = 'Cari barang yang diminta pelanggan, lalu klik.';
-    view.className = 'racks' + (S.freshLayout ? ' fresh' : '');
-    let n = 0;
-    view.innerHTML = S.racks.map((rack, r) =>
-      `<div class="shelfRack ${rack.kind === 'hook' ? 'pegboard' : ''}"><h3>Rak ${ABC[r]}${rack.kind === 'hook' ? ' · Hakpen' : ''}</h3>${rack.shelves.map((items, s) =>
-        `<div class="shelf">${items.map((it, i) =>
-          `<button class="item" style="--d:${(n++) * 0.02}s" title="${itemName(it)}" onclick="zoom(${r}, ${s}, ${i})">${itemSVG(it)}<span class="nm">${it.kind === 'hook' ? `${it.size} mm` : it.color}</span></button>`
-        ).join('')}</div>`
-      ).join('')}</div>`
-    ).join('');
+    const tabbed = phoneQuery.matches;
+    view.className = 'racks' + (S.freshLayout ? ' fresh' : '') + (tabbed ? ' tabbed' : '');
+    if (tabbed) {
+      S.tab = Math.min(S.tab || 0, S.racks.length - 1);
+      $('#hint').innerHTML = `<div class="tabs">${S.racks.map((rk, r) =>
+        `<button class="tab ${r === S.tab ? 'on' : ''} ${rk.kind === 'hook' ? 'hookTab' : ''}" onclick="setTab(${r})">${rk.kind === 'hook' ? 'Hakpen' : 'Rak ' + ABC[r]}</button>`).join('')}</div>`;
+      view.innerHTML = rackHTML(S.racks[S.tab], S.tab, S.slideTab ? 'slide' : '');
+    } else {
+      $('#hint').textContent = 'Cari barang yang diminta pelanggan, lalu klik.';
+      view.innerHTML = S.racks.map((rack, r) => rackHTML(rack, r)).join('');
+    }
     S.freshLayout = false;
+    S.slideTab = false;
     fitRacks();
   } else if (S.view === 'pay') {
     $('#hint').textContent = 'Kasir: susun uang kembaliannya.';
@@ -881,7 +994,9 @@ function render() {
 function fitRacks() {
   const view = $('#view');
   if (!S || !view.classList.contains('racks')) return;
-  const L = LEVELS[S.lvl], nR = S.racks.length;
+  const tabbed = view.classList.contains('tabbed');
+  const L = LEVELS[S.lvl], nR = tabbed ? 1 : S.racks.length;
+  const shelves = tabbed ? S.racks[S.tab].shelves.length : L.shelves;
   const W = view.clientWidth, H = view.clientHeight;
   let best = null;
   for (let rows = 1; rows <= nR; rows++) {
@@ -890,14 +1005,14 @@ function fitRacks() {
     const rackH = (H - 8 * (rows - 1)) / rows;
     const fs = Math.max(9, Math.min(12, rackW / 14));
     const byW = (rackW - 12 - 6) / L.perShelf - 8;
-    const shelfH = (rackH - 12 - 6 - 20 - 6 * L.shelves) / L.shelves; // padding rak, bayangan, judul, jarak
+    const shelfH = (rackH - 12 - 6 - 20 - 6 * shelves) / shelves; // padding rak, bayangan, judul, jarak
     const byH = shelfH - 4 - 6 - 4 - fs * 1.2;                         // padding tingkat, papan, item, label
-    const ys = Math.min(64, byW, byH);
+    const ys = Math.min(nR === 1 ? 80 : 64, byW, byH);
     if (!best || ys > best.ys) best = { ys, cols, fs };
   }
   // Layar terlalu kecil (HP): daripada benang jadi mungil, pakai kolom yang wajar dan boleh scroll
   view.style.overflowY = 'hidden';
-  if (best.ys < 28) {
+  if (best.ys < 28 && nR > 1) {
     const cols = Math.max(2, Math.floor(W / 150));
     const rackW = (W - 8 * (cols - 1)) / cols;
     best = { cols, fs: 11, ys: Math.min(52, (rackW - 18) / L.perShelf - 8) };
@@ -907,7 +1022,8 @@ function fitRacks() {
   view.style.setProperty('--ys', best.ys + 'px');
   view.style.setProperty('--fs', best.fs + 'px');
 }
-window.addEventListener('resize', fitRacks);
+// Hitung ulang setiap kali ukuran area rak berubah (resize, balon chat muncul, dll.)
+new ResizeObserver(() => fitRacks()).observe($('#view'));
 
 function zoom(r, s, i) {
   if (S.phase !== 'serve') return;
@@ -915,7 +1031,7 @@ function zoom(r, s, i) {
   Sound.play('wow');
   showOverlay(`
     <div class="zoomStage"><div class="rays"></div>${itemSVG(it)}<div class="wowTag">WOW!</div></div>
-    <h2>${it.kind === 'hook' ? '' : 'Benang '}${itemName(it)}</h2>
+    <h2>${it.kind === 'hook' ? '' : 'Benang '}${itemLabel(it)}</h2>
     <div class="price">${rp(it.price)}</div>
     <div class="btns">
       <button class="btn ghost" onclick="Sound.play('click'); hideOverlay()">Taruh lagi</button>
@@ -959,7 +1075,7 @@ function renderPay() {
         <div class="hl"><span>KEMBALIAN</span><b>${rp(given)}</b></div>
       </div>
       <div class="paidRow">
-        <div class="bought">${c.order.map(it => `<div>${itemSVG(it)}${itemName(it)} <b>${rp(it.price)}</b></div>`).join('')}</div>
+        <div class="bought">${c.order.map(it => `<div>${itemSVG(it)}${itemLabel(it)} <b>${rp(it.price)}</b></div>`).join('')}</div>
         ${moneyHTML(c.paid, 'div', S.payFresh ? 'handover' : '')}
       </div>
       <div class="label">Kembalian untuk pelanggan (klik uang di sini untuk ambil lagi)</div>
@@ -1060,7 +1176,10 @@ function getBest() { try { return Number(localStorage.getItem(BEST_KEY)) || 0; }
 function setBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) { /* abaikan */ } }
 
 // ================== MULAI ==================
-$('#muteBtn').innerHTML = SPEAKER_ON;
+if (!loadPref('sfx')) Sound.toggle();
+Sound.toggleMusic(loadPref('music'));
+$('#muteBtn').innerHTML = Sound.muted ? SPEAKER_OFF : SPEAKER_ON;
+$('#musicBtn').innerHTML = Sound.musicOn ? MUSIC_ON : MUSIC_OFF;
 $('#logo').innerHTML = yarnSVG({ type: 'Wol', hex: '#f07fb0' }) + '<span>Toko Benang</span>';
 showOverlay(`
   ${yarnSVG({ type: 'Wol', hex: '#f07fb0' }, 'bigLogo')}
