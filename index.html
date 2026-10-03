@@ -417,9 +417,9 @@ const TYPES = [
 //   minItems/maxItems = berapa benang yang diminta satu pelanggan
 //   time      = detik untuk pelanggan yang minta 1 benang, + timePerExtra untuk tiap benang tambahan
 const LEVELS = [
-  { racks: 3, shelves: 4, perShelf: 2, types: 2, hooks: 4, hookChance: .3, customers: 4, minItems: 1, maxItems: 2, time: 45 },
-  { racks: 4, shelves: 4, perShelf: 2, types: 3, hooks: 6, hookChance: .4, customers: 4, minItems: 1, maxItems: 3, time: 40 },
-  { racks: 4, shelves: 6, perShelf: 2, types: 4, hooks: 8, hookChance: .5, customers: 4, minItems: 2, maxItems: 3, time: 35 },
+  { racks: 3, shelves: 4, perShelf: 2, types: 2, hooks: 4, hookChance: .3, customers: 3, minItems: 1, maxItems: 2, time: 45 },
+  { racks: 4, shelves: 4, perShelf: 2, types: 3, hooks: 6, hookChance: .4, customers: 3, minItems: 1, maxItems: 3, time: 40 },
+  { racks: 4, shelves: 6, perShelf: 2, types: 4, hooks: 8, hookChance: .5, customers: 3, minItems: 2, maxItems: 3, time: 35 },
 ];
 const TIME_PER_EXTRA = 15;
 // Hakpen: bahan × ukuran. Hakpen aluminium warna gagangnya sesuai ukuran (seperti aslinya).
@@ -859,7 +859,7 @@ function startLevel() {
     <p>${L.racks} rak benang (<b>${L.racks * L.shelves * L.perShelf}</b> gulung) + papan <b>${L.hooks}</b> hakpen.<br>
        Semua posisi sudah <b>diacak ulang</b>, jadi ingat-ingat ya!</p>
     <p>Tiap pelanggan minta <b>${L.minItems === L.maxItems ? L.minItems : L.minItems + '–' + L.maxItems}</b> barang.</p>
-    <div class="btns"><button class="btn go" onclick="hideOverlay(); nextCustomer()">Buka Toko</button></div>`);
+    <div class="btns">${S.lvl > 0 ? `<button class="btn ghost" onclick="Sound.play('click'); endGame()">Selesai di sini</button>` : ''}<button class="btn go" onclick="hideOverlay(); nextCustomer()">${S.lvl > 0 ? 'Lanjut' : 'Buka Toko'}</button></div>`);
 }
 
 function nextCustomer() {
