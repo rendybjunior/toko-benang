@@ -1,0 +1,4 @@
+# Situs statis: index.html langsung disajikan, tidak ada proses build
+[build]
+  publish = "."
+  command = ""
